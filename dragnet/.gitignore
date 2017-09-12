@@ -1,0 +1,26 @@
+# compiled files
+*.pyc
+*.so
+build/*
+dist/*
+dragnet.egg-info
+
+# cython temporary files
+dragnet/blocks.cpp
+dragnet/blocks.html
+dragnet/lcs.cpp
+dragnet/lcs.html
+dragnet/_weninger.cpp
+dragnet/readability.cpp
+
+
+documents/*
+output/*
+
+.coverage
+test/
+crawling/
+# vim temp files
+*.swp
+
+.vagrant

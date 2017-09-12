@@ -1,0 +1,10 @@
+requests
+pillow
+nose
+coverage
+Cython>=0.21.1
+lxml
+scikit-learn>=0.15.2,<=0.16.1
+numpy
+scipy
+mozsci

@@ -1,0 +1,4 @@
+{
+    "python.linting.pylintPath": "/usr/lib/python2.7/dist-packages/pylint",
+    "python.linting.pylintEnabled": false
+}
