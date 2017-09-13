@@ -22,11 +22,16 @@ def save_file_utf8(name, obj):
         file.write(u'%s' % obj)
 
 
-def load_file(pathfile):
+def load_file(pathfile, use_pickle=False):
     if path.exists(pathfile):
-        with open(pathfile, 'rb') as f:
-            data = pickle.load(f)
-        return data 
+        if use_pickle:
+            with open(pathfile, 'rb') as f:
+                data = pickle.load(f)
+            return data 
+        else:
+            with open(pathfile, 'rb') as f:
+                data = f.readlines()
+            return data
 
 
 def load_file_utf8(pathfile):
