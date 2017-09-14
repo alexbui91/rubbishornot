@@ -14,11 +14,10 @@ from dragnet import content_extractor
 
 # scrape list of sitemaps as parsing
 def scrape_list(sites):
-    print(sites)
     for x in sites:
         #create folder if not exists
         folder = get_domain_name(x)
-        utils.create_folder(folder)
+        utils.create_folder('crawling/' + folder)
         urls = parse_sitemap(x)
         get_articles(folder, urls)
         json_data = json.dumps({'data': urls})
@@ -70,11 +69,22 @@ def get_articles(folder, sitemap):
         article = get_article_name(index + last_index)
         base = 'crawling/%s/%s' % (folder, article)
         r = requests.get(a['link'])
-        
+        html = Soup(r.content)
+        title = html.find('h1')
+        if title:
+            title = title.string.strip()
+        else:
+            title = ''
         content = content_extractor.analyze(r.content)
+        # print([])
+        content = title.encode('utf=8') + '\n' + content
         utils.save_file(base + '.txt', content, False)
         #get images
         get_images(base, a['images'])
+
+
+def is_ascii(s):
+    return all(ord(c) < 128 for c in s)
 
 
 def get_last_index(folder):
@@ -89,11 +99,12 @@ def get_last_index(folder):
 
 # download image inside article
 def get_images(base, img_src):
-    utils.create_folder(base)
-    for index, img in enumerate(img_src):
-        f = open("%s/%i.jpg" % (base, index),'wb')
-        f.write(requests.get(img).content)
-        f.close()
+    if img_src:
+        utils.create_folder(base)
+        for index, img in enumerate(img_src):
+            f = open("%s/%i.jpg" % (base, index),'wb')
+            f.write(requests.get(img).content)
+            f.close()
 
 
 # fill index article with '000000' -> '000123'
@@ -111,7 +122,8 @@ def get_article_name(index, max_length=6):
 
 
 def main():
-    good = utils.load_file('sitemap_t.txt')
+    good = utils.load_file('sitemap_good.txt')
+    bad = utils.load_file('sitemap_bad.txt')
     scrape_list(good)
     # bad = utils.load_file('sitemap_bad.txt')
 
