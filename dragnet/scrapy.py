@@ -72,7 +72,7 @@ def get_articles(folder, sitemap):
         html = Soup(r.content)
         title = html.find('h1')
         if title:
-            title = title.string.strip()
+            title = getText(title)
         else:
             title = ''
         content = content_extractor.analyze(r.content)
@@ -83,8 +83,8 @@ def get_articles(folder, sitemap):
         get_images(base, a['images'])
 
 
-def is_ascii(s):
-    return all(ord(c) < 128 for c in s)
+def getText(parent):
+    return ''.join(parent.find(text=True)).strip()
 
 
 def get_last_index(folder):
@@ -123,7 +123,7 @@ def get_article_name(index, max_length=6):
 
 def main():
     good = utils.load_file('sitemap_good.txt')
-    bad = utils.load_file('sitemap_bad.txt')
+    # bad = utils.load_file('sitemap_bad.txt')
     scrape_list(good)
     # bad = utils.load_file('sitemap_bad.txt')
 
