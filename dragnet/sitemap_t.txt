@@ -1,1 +1,3 @@
-http://thethao247.vn/sitemap.xml
+http://kenh14.vn/news_sitemaps/sitemap-detail-13.xml
+http://kenh14.vn/news_sitemaps/sitemap-detail-19.xml
+http://kenh14.vn/news_sitemaps/sitemap-detail-36.xml

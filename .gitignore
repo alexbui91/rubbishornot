@@ -1,4 +1,4 @@
 *.pyc
 properties.py
 data/
-
+cached.pkl

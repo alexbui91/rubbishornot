@@ -1,5 +1,5 @@
+import urllib2
 import requests
-import urllib
 import os 
 
 from BeautifulSoup import BeautifulStoneSoup as Soup
@@ -9,19 +9,32 @@ from urlparse import urlparse
 import numpy as np
 
 import utils
+import properties as p
+
 from dragnet import content_extractor
 
 
 # scrape list of sitemaps as parsing
+loaded = dict()
+
 def scrape_list(sites):
     for x in sites:
+        print('==> scraping site: %s' % x)
         #create folder if not exists
         folder = get_domain_name(x)
         utils.create_folder('crawling/' + folder)
-        urls = parse_sitemap(x)
+        j_hash = hash(x)
+        json_file = '%s_sitemap.json' % j_hash
+        if os.path.isfile(json_file):
+            with open(json_file) as f:
+                data = json.load(f)
+                urls = data['data']
+        else:
+            urls = parse_sitemap(x)
+            json_data = json.dumps({'data': urls})
+            utils.save_file(json_file, json_data, use_pickle=False)
+        print('total available urls: %i' % len(urls))
         get_articles(folder, urls)
-        json_data = json.dumps({'data': urls})
-        utils.save_file('%s/sitemap.json' % folder, json_data, use_pickle=False)
 
 
 def get_domain_name(url):
@@ -32,10 +45,10 @@ def get_domain_name(url):
 def parse_sitemap(url_string, url_links=None):
     if not url_links:
         url_links = []
-    resp = requests.get(url_string)
-    if 200 != resp.status_code:
-        return False
-    soup = Soup(resp.content)
+    html = urllib2.urlopen(url_string)
+    # if 200 != resp.status_code:
+    #     return []
+    soup = Soup(html)
     sitemap = soup.findAll('sitemapindex')
     url_set = soup.findAll('urlset')
     locs = []
@@ -65,22 +78,35 @@ def is_article_url(url):
 # scrape one list of articles 
 def get_articles(folder, sitemap):
     last_index = get_last_index('crawling/%s' % folder)
+    total = len(sitemap)
     for index, a in enumerate(sitemap):
-        article = get_article_name(index + last_index)
-        base = 'crawling/%s/%s' % (folder, article)
-        r = requests.get(a['link'])
-        html = Soup(r.content)
-        title = html.find('h1')
-        if title:
-            title = getText(title)
-        else:
-            title = ''
-        content = content_extractor.analyze(r.content)
-        # print([])
-        content = title.encode('utf=8') + '\n' + content
-        utils.save_file(base + '.txt', content, False)
-        #get images
-        get_images(base, a['images'])
+        key = hash(a['link'])
+        if not key in loaded:
+            loaded[key] = 1
+            article = get_article_name(index + last_index)
+            base = 'crawling/%s/%s' % (folder, article)
+            try: 
+                r = requests.get(a['link'], timeout=10)
+                # r = urllib2.urlopen(a['link'])
+                html = Soup(r.text.encode('utf-8').decode('ascii', 'ignore'))
+                title = html.find('h1')
+                if title:
+                    title = getText(title)
+                else:
+                    title = ''
+                content = content_extractor.analyze(r.content)
+                if len(content.split(' ')) >= p.min_length:
+                    # print([])
+                    content = title.encode('utf=8') + '\n' + a['link'].encode('utf-8') + '\n' + content
+                    utils.save_file(base + '.txt', content, False)
+                    #get images
+                get_images(base, a['images'])
+            except requests.exceptions.Timeout:
+                #do nothing
+                print("Timeout url: %s" % a['link'])
+            except Exception:
+                print("Error occured")
+        utils.update_progress(index * 1.0 / total)
 
 
 def getText(parent):
@@ -122,9 +148,13 @@ def get_article_name(index, max_length=6):
 
 
 def main():
-    good = utils.load_file('sitemap_good.txt')
+    a_load = utils.load_file('cached.pkl')
+    if a_load: 
+        loaded = a_load
+    good = utils.load_file('sitemap_t.txt')
     # bad = utils.load_file('sitemap_bad.txt')
     scrape_list(good)
+    utils.save_file('cached.pkl', loaded)
     # bad = utils.load_file('sitemap_bad.txt')
 
 
@@ -133,3 +163,4 @@ def main():
 # scrape_list(['https://tokhoe.com/post-sitemap1.xml'])
 
 main()
+# parse_sitemap('http://dantri.com.vn/sitemaps/sitemap-index.xml')
