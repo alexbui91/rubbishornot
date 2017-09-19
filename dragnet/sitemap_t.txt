@@ -1,3 +1,1 @@
-http://kenh14.vn/news_sitemaps/sitemap-detail-13.xml
-http://kenh14.vn/news_sitemaps/sitemap-detail-19.xml
-http://kenh14.vn/news_sitemaps/sitemap-detail-36.xml
+http://cafebiz.vn/sitemaps/sitemap-index.xml

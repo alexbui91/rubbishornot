@@ -95,6 +95,9 @@ as appropriate for your operation system.
 
 ```bash
 $ cd dragnet
+$ (install lxml in each os)
+    on centos: sudo yum install libxslt-devel python-devel https://stackoverflow.com/questions/4642942/setup-py-install-lxml-with-python2-6-on-centos
+    on ubuntu: apt-get install libxml2-dev libxslt1-dev python-dev https://stackoverflow.com/questions/6504810/how-to-install-lxml-on-ubuntu
 $ sudo make install
 # these should now pass
 $ make test

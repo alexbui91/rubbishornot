@@ -5,6 +5,7 @@ import os
 from BeautifulSoup import BeautifulStoneSoup as Soup
 import json
 from urlparse import urlparse
+import argparse
 
 import numpy as np
 
@@ -45,27 +46,28 @@ def get_domain_name(url):
 def parse_sitemap(url_string, url_links=None):
     if not url_links:
         url_links = []
-    html = urllib2.urlopen(url_string)
-    # if 200 != resp.status_code:
-    #     return []
-    soup = Soup(html)
-    sitemap = soup.findAll('sitemapindex')
-    url_set = soup.findAll('urlset')
-    locs = []
-    if sitemap:
-        locs = [s.string for s in soup.findAll('loc')]
-        for l in locs:
-            url_links = parse_sitemap(l, url_links)
-    elif url_set:
-        urls = soup.findAll('url')
-        if urls:
-            fir_url = urls[0].find('loc').string
-            if is_article_url(fir_url):
-                for u in urls:
-                    link = u.find('loc').string
-                    img_src = [
-                        img.find('image:loc').string for img in u.findAll('image:image')]
-                    url_links.append({'link': link, 'images': img_src})
+    if not 'tag' in url_string:
+        html = urllib2.urlopen(url_string)
+        # if 200 != resp.status_code:
+        #     return []
+        soup = Soup(html)
+        sitemap = soup.findAll('sitemapindex')
+        url_set = soup.findAll('urlset')
+        locs = []
+        if sitemap:
+            locs = [s.string for s in soup.findAll('loc')]
+            for l in locs:
+                url_links = parse_sitemap(l, url_links)
+        elif url_set:
+            urls = soup.findAll('url')
+            if urls:
+                fir_url = urls[0].find('loc').string
+                if is_article_url(fir_url):
+                    for u in urls:
+                        link = u.find('loc').string
+                        img_src = [
+                            img.find('image:loc').string for img in u.findAll('image:image')]
+                        url_links.append({'link': link, 'images': img_src})
     return url_links
 
 
@@ -88,7 +90,7 @@ def get_articles(folder, sitemap):
             try: 
                 r = requests.get(a['link'], timeout=10)
                 # r = urllib2.urlopen(a['link'])
-                html = Soup(r.text.encode('utf-8').decode('ascii', 'ignore'))
+                html = Soup(r.text)
                 title = html.find('h1')
                 if title:
                     title = getText(title)
@@ -102,10 +104,9 @@ def get_articles(folder, sitemap):
                     #get images
                 get_images(base, a['images'])
             except requests.exceptions.Timeout:
-                #do nothing
                 print("Timeout url: %s" % a['link'])
             except Exception:
-                print("Error occured")
+                print("Error occured", e)
         utils.update_progress(index * 1.0 / total)
 
 
@@ -147,13 +148,16 @@ def get_article_name(index, max_length=6):
         return '000000'
 
 
-def main():
+def main(urls, file=True):
     a_load = utils.load_file('cached.pkl')
     if a_load: 
         loaded = a_load
-    good = utils.load_file('sitemap_t.txt')
-    # bad = utils.load_file('sitemap_bad.txt')
-    scrape_list(good)
+    if file:
+        urls = utils.load_file(file)
+        # bad = utils.load_file('sitemap_bad.txt')
+    elif urls:
+        urls = urls.split(',')
+    scrape_list(urls)
     utils.save_file('cached.pkl', loaded)
     # bad = utils.load_file('sitemap_bad.txt')
 
@@ -161,6 +165,13 @@ def main():
 # print(get_article_name(1234567))
 # get_articles('tokhoe.com', [{"images": ["https://tokhoe.com/wp-content/uploads/2016/09/thumb.jpg"], "link": "https://tokhoe.com/song-khoe/giu-duoc-thoi-quen-uong-du-nuoc-moi-ngay-ban-se-dat-duoc-vo-loi-ich-khong-tuong-6.html"}])
 # scrape_list(['https://tokhoe.com/post-sitemap1.xml'])
-
-main()
+if __name__ == "__main__":
+    parser = argparse.ArgumentParser()
+    parser.add_argument("-f", "--file")
+    parser.add_argument("-u", "--urls")
+    args = parser.parse_args()
+    if args.file:
+        main(args.file, file=True)
+    elif args.urls:
+        main(args.urls, file=False)
 # parse_sitemap('http://dantri.com.vn/sitemaps/sitemap-index.xml')
