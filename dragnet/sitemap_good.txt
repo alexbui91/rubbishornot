@@ -1,6 +1,4 @@
 http://emdep.vn/sitemaps/sitemap-posts.xml
-https://vnexpress.net/sitemap.xml
-http://dantri.com.vn/sitemaps/sitemap-index.xml
 http://www.24h.com.vn/sitemap-news.xml
 http://www.24h.com.vn/sitemap-event.xml
 http://www.24h.com.vn/sitemap-article-2017-08-4.xml
@@ -21,5 +19,3 @@ http://www.baomoi.com/sitemaps/article-20170711.xml
 http://www.baomoi.com/sitemaps/article-20170910.xml
 http://tuoitre.vn/sitemaps/sitemap-index.xml
 http://vietnamnet.vn/sitemap.xml
-http://news.zing.vn/sitemap/sitemap.xml
-http://afamily.vn/Sitemaps/sitemap-index.xml

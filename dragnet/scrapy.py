@@ -105,7 +105,7 @@ def get_articles(folder, sitemap):
                 get_images(base, a['images'])
             except requests.exceptions.Timeout:
                 print("Timeout url: %s" % a['link'])
-            except Exception:
+            except Exception as e:
                 print("Error occured", e)
         utils.update_progress(index * 1.0 / total)
 
@@ -148,12 +148,12 @@ def get_article_name(index, max_length=6):
         return '000000'
 
 
-def main(urls, file=True):
+def main(urls, file=False):
     a_load = utils.load_file('cached.pkl')
     if a_load: 
         loaded = a_load
     if file:
-        urls = utils.load_file(file)
+        urls = utils.load_file(urls)
         # bad = utils.load_file('sitemap_bad.txt')
     elif urls:
         urls = urls.split(',')
@@ -167,11 +167,11 @@ def main(urls, file=True):
 # scrape_list(['https://tokhoe.com/post-sitemap1.xml'])
 if __name__ == "__main__":
     parser = argparse.ArgumentParser()
-    parser.add_argument("-f", "--file")
+    parser.add_argument("-f", "--file", type=int, default=0)
     parser.add_argument("-u", "--urls")
     args = parser.parse_args()
     if args.file:
-        main(args.file, file=True)
+        main(args.urls, file=True)
     elif args.urls:
         main(args.urls, file=False)
 # parse_sitemap('http://dantri.com.vn/sitemaps/sitemap-index.xml')
