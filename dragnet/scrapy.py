@@ -93,7 +93,7 @@ def get_articles(folder, sitemap):
             article = get_article_name(index + last_index)
             base = 'crawling/%s/%s' % (folder, article)
             try: 
-                r = requests.get(a['link'], timeout=10)
+                r = requests.get(a['link'], timeout=5)
                 # r = urllib2.urlopen(a['link'])
                 html = Soup(r.text)
                 title = html.find('h1')
@@ -112,6 +112,7 @@ def get_articles(folder, sitemap):
                 print("Timeout url: %s" % a['link'])
             except Exception as e:
                 print("Error occured", e)
+            utils.save_file('cached.pkl', loaded)
         utils.update_progress(index * 1.0 / total)
 
 
@@ -133,10 +134,15 @@ def get_last_index(folder):
 def get_images(base, img_src):
     if img_src:
         utils.create_folder(base)
-        for index, img in enumerate(img_src):
-            f = open("%s/%i.jpg" % (base, index),'wb')
-            f.write(requests.get(img).content)
-            f.close()
+        try:
+            for index, img in enumerate(img_src):
+                f = open("%s/%i.%s" % (base, index, img.split('.')[-1]),'wb')
+                f.write(requests.get(img, timeout=2).content)
+                f.close()
+        except Exception e:
+            print("Error when load images", e)
+        if not len(os.listdir(base)):
+            os.rmdir(base)
 
 
 # fill index article with '000000' -> '000123'
@@ -163,7 +169,6 @@ def main(urls, file=False):
     elif urls:
         urls = urls.split(',')
     scrape_list(urls)
-    utils.save_file('cached.pkl', loaded)
     # bad = utils.load_file('sitemap_bad.txt')
 
 
