@@ -82,4 +82,3 @@ http://www.baomoi.com/sitemaps/article-20170920.xml
 http://www.baomoi.com/sitemaps/article-20170921.xml
 http://www.baomoi.com/sitemaps/article-20170922.xml
 http://www.baomoi.com/sitemaps/article-20170923.xml
-http://www.baomoi.com/sitemaps/article-20170924.xml

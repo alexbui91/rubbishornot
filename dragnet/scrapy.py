@@ -20,18 +20,19 @@ loaded = dict()
 
 def scrape_list(sites):
     for x in sites:
-        print('==> scraping site: %s' % x)
+        url = x.replace('\n', '')   
+        print('==> scraping site: %s' % url)
         #create folder if not exists
-        folder = get_domain_name(x)
+        folder = get_domain_name(url)
         utils.create_folder('crawling/' + folder)
-        j_hash = hash(x)
+        j_hash = hash(url)
         json_file = '%s_sitemap.json' % j_hash
         if os.path.isfile(json_file):
             with open(json_file) as f:
                 data = json.load(f)
                 urls = data['data']
         else:
-            urls = parse_sitemap(x)
+            urls = parse_sitemap(url)
             json_data = json.dumps({'data': urls})
             utils.save_file(json_file, json_data, use_pickle=False)
         print('total available urls: %i' % len(urls))
@@ -44,30 +45,34 @@ def get_domain_name(url):
 
 
 def parse_sitemap(url_string, url_links=None):
-    if not url_links:
-        url_links = []
-    if not 'tag' in url_string:
-        html = urllib2.urlopen(url_string)
-        # if 200 != resp.status_code:
-        #     return []
-        soup = Soup(html)
-        sitemap = soup.findAll('sitemapindex')
-        url_set = soup.findAll('urlset')
-        locs = []
-        if sitemap:
-            locs = [s.string for s in soup.findAll('loc')]
-            for l in locs:
-                url_links = parse_sitemap(l, url_links)
-        elif url_set:
-            urls = soup.findAll('url')
-            if urls:
-                fir_url = urls[0].find('loc').string
-                if is_article_url(fir_url):
-                    for u in urls:
-                        link = u.find('loc').string
-                        img_src = [
-                            img.find('image:loc').string for img in u.findAll('image:image')]
-                        url_links.append({'link': link, 'images': img_src})
+    try:
+        if not url_links:
+            url_links = []
+        if not 'tag' in url_string:
+            r = requests.get(url_string, timeout=10)
+            # html = urllib2.urlopen(url_string)
+            # if 200 != resp.status_code:
+            #     return []
+            soup = Soup(r.text)
+            sitemap = soup.findAll('sitemapindex')
+            url_set = soup.findAll('urlset')
+            locs = []
+            if sitemap:
+                locs = [s.string for s in soup.findAll('loc')]
+                for l in locs:
+                    url_links = parse_sitemap(l, url_links)
+            elif url_set:
+                urls = soup.findAll('url')
+                if urls:
+                    fir_url = urls[0].find('loc').string
+                    if is_article_url(fir_url):
+                        for u in urls:
+                            link = u.find('loc').string
+                            img_src = [
+                                img.find('image:loc').string for img in u.findAll('image:image')]
+                            url_links.append({'link': link, 'images': img_src})
+    except Exception as e: 
+        print("Error occurred during parse sitemap", e)
     return url_links
 
 

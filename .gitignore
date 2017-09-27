@@ -2,3 +2,4 @@
 properties.py
 data/
 cached.pkl
+dragnet/*.json
