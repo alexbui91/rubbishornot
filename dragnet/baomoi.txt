@@ -1,4 +1,3 @@
-http://www.baomoi.com/sitemaps/article-20170725.xml
 http://www.baomoi.com/sitemaps/article-20170726.xml
 http://www.baomoi.com/sitemaps/article-20170727.xml
 http://www.baomoi.com/sitemaps/article-20170728.xml

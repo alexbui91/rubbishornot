@@ -26,7 +26,7 @@ def scrape_list(sites):
         folder = get_domain_name(url)
         utils.create_folder('crawling/' + folder)
         j_hash = hash(url)
-        json_file = '%s_sitemap.json' % j_hash
+        json_file = 'json/%s_sitemap.json' % j_hash
         if os.path.isfile(json_file):
             with open(json_file) as f:
                 data = json.load(f)
@@ -93,7 +93,7 @@ def get_articles(folder, sitemap):
             article = get_article_name(index + last_index)
             base = 'crawling/%s/%s' % (folder, article)
             try: 
-                r = requests.get(a['link'], timeout=5)
+                r = requests.get(a['link'], timeout=p.url_timeout)
                 # r = urllib2.urlopen(a['link'])
                 html = Soup(r.text)
                 title = html.find('h1')
@@ -109,11 +109,12 @@ def get_articles(folder, sitemap):
                     #get images
                 get_images(base, a['images'])
             except requests.exceptions.Timeout:
+                utils.save_file('cached.pkl', loaded)
                 print("Timeout url: %s" % a['link'])
             except Exception as e:
+                utils.save_file('cached.pkl', loaded)
                 print("Error occured", e)
-            utils.save_file('cached.pkl', loaded)
-        utils.update_progress(index * 1.0 / total)
+        utils.update_progress((index + 1) * 1.0 / total)
 
 
 def getText(parent):
@@ -137,9 +138,9 @@ def get_images(base, img_src):
         try:
             for index, img in enumerate(img_src):
                 f = open("%s/%i.%s" % (base, index, img.split('.')[-1]),'wb')
-                f.write(requests.get(img, timeout=2).content)
+                f.write(requests.get(img, timeout=p.image_timeout).content)
                 f.close()
-        except Exception e:
+        except Exception as e:
             print("Error when load images", e)
         if not len(os.listdir(base)):
             os.rmdir(base)
@@ -160,15 +161,19 @@ def get_article_name(index, max_length=6):
 
 
 def main(urls, file=False):
+    global loaded
     a_load = utils.load_file('cached.pkl')
     if a_load: 
         loaded = a_load
+    else:
+        loaded = dict()
     if file:
         urls = utils.load_file(urls)
         # bad = utils.load_file('sitemap_bad.txt')
     elif urls:
         urls = urls.split(',')
     scrape_list(urls)
+    utils.save_file('cached.pkl', loaded)
     # bad = utils.load_file('sitemap_bad.txt')
 
 
